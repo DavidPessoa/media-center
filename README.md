@@ -1,4 +1,8 @@
-# Nas
+# Media Center
+
+This project is an eazy implementation of a media center for linux distributions.
+Part of the features provided come from Luctia/ezarr repository which you can check [here](https://github.com/Luctia/ezarr).
+
 
 ## disk-setup.sh
 > :warning: **Only run `disk-setup.sh` if your plex data is stored  in a drive other than default linux instalation one**
@@ -30,6 +34,7 @@ blkid /dev/sda1
 Once you have the UUID you can run the disk-setup script.
 ```
 sudo ./setup.sh f4f2a026-17cd-4863-b74c-d60d6700396b
+```
 
 For more info check: 
 [https://forums.plex.tv/t/using-ext-ntfs-or-other-format-drives-internal-or-external-on-linux/198544](https://forums.plex.tv/t/using-ext-ntfs-or-other-format-drives-internal-or-external-on-linux/198544)
