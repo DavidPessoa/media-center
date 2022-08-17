@@ -22,7 +22,7 @@ sudo usermod -a -G mediacenter jackett
 sudo usermod -a -G mediacenter plex
 
 # Make directories
-sudo mkdir -pv docker/{sonarr,radarr,lidarr,readarr,mylar,prowlarr,qbittorrent,jackett}-config
+sudo mkdir -pv docker/{sonarr,radarr,lidarr,readarr,mylar,prowlarr,qbittorrent,jackett,plex}-config
 sudo mkdir -pv data/{torrents,media}/{tv,movies,music,books,comics}
 
 # Set permissions
