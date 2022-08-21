@@ -10,6 +10,7 @@ sudo useradd prowlarr -u 13006
 sudo useradd qbittorrent -u 13007
 sudo useradd jackett -u 13008
 sudo useradd plex -u 13009
+sudo useradd photoprism -u 13014
 sudo groupadd mediacenter -g 13000
 sudo usermod -a -G mediacenter sonarr
 sudo usermod -a -G mediacenter radarr
@@ -20,10 +21,13 @@ sudo usermod -a -G mediacenter prowlarr
 sudo usermod -a -G mediacenter qbittorrent
 sudo usermod -a -G mediacenter jackett
 sudo usermod -a -G mediacenter plex
+sudo usermod -a -G mediacenter photoprism
 
 # Make directories
-sudo mkdir -pv docker/{sonarr,radarr,lidarr,readarr,mylar,prowlarr,qbittorrent,jackett,plex}-config
-sudo mkdir -pv data/{torrents,media}/{tv,movies,music,books,comics}
+sudo mkdir -pv docker/{sonarr,radarr,lidarr,readarr,mylar,prowlarr,qbittorrent,jackett,plex,photoprism}-config
+sudo mkdir -pv data/{torrents,media}/{tv,movies,music,books,comics,photos}
+sudo mkdir -pv data/photoprism_database
+sudo mkdir -pv data/photoprism_storage
 
 # Set permissions
 sudo chmod -R 775 data/
@@ -37,6 +41,6 @@ sudo chown -R prowlarr:mediacenter docker/prowlarr-config
 sudo chown -R qbittorrent:mediacenter docker/qbittorrent-config
 sudo chown -R jackett:mediacenter docker/jackett-config
 sudo chown -R plex:mediacenter docker/plex-config
-
+sudo chown -R photoprism:mediacenter docker/photoprism-config
 
 echo "UID=$(id -u)" >> .env
