@@ -38,3 +38,7 @@ sudo ./setup.sh f4f2a026-17cd-4863-b74c-d60d6700396b
 
 For more info check: 
 [https://forums.plex.tv/t/using-ext-ntfs-or-other-format-drives-internal-or-external-on-linux/198544](https://forums.plex.tv/t/using-ext-ntfs-or-other-format-drives-internal-or-external-on-linux/198544)
+
+
+## Todo
+Add a backup script
