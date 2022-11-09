@@ -2,7 +2,7 @@
 version: "3.1"
 services:
   plex:
-    image: lscr.io/linuxserver/plex:latest
+    image: lscr.io/linuxserver/plex:1.29.1
     container_name: plex
     network_mode: host
     environment:
@@ -15,28 +15,11 @@ services:
       - ${ROOT_DIR}/data/media/movies:/movies
       - ${ROOT_DIR}/data/media/tv:/tv
     restart: unless-stopped
-
-  tautulli:
-    image: lscr.io/linuxserver/tautulli:latest
-    container_name: tautulli
-    networks:
-      - vpn_connection
-    depends_on:
-      - plex
-    environment:
-      - PUID=${UID}
-      - PGID=13000
-      - TZ=${TIMEZONE}
-    volumes:
-      - ${ROOT_DIR}/docker/tautulli-config:/config
-    ports:
-      - 8181:8181
-    restart: unless-stopped
 #
 # SERVARR
 #
   radarr:
-    image: lscr.io/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr:4.2.4
     container_name: radarr
     networks:
       - vpn_connection
@@ -53,7 +36,7 @@ services:
     restart: unless-stopped
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
+    image: lscr.io/linuxserver/sonarr:3.0.9
     container_name: sonarr
     networks:
       - vpn_connection
@@ -69,39 +52,39 @@ services:
       - 8989:8989
     restart: unless-stopped
 
-  lidarr:
-    image: lscr.io/linuxserver/lidarr:latest
-    container_name: lidarr
-    networks:
-      - vpn_connection
-    environment:
-      - PUID=13003
-      - PGID=13000
-      - UMASK=002
-      - TZ=${TIMEZONE}
-    volumes:
-      - ${ROOT_DIR}/docker/lidarr-config:/config
-      - ${ROOT_DIR}/data:/data
-    ports:
-      - 8686:8686
-    restart: unless-stopped
+  # lidarr:
+  #   image: lscr.io/linuxserver/lidarr:latest
+  #   container_name: lidarr
+  #   networks:
+  #     - vpn_connection
+  #   environment:
+  #     - PUID=13003
+  #     - PGID=13000
+  #     - UMASK=002
+  #     - TZ=${TIMEZONE}
+  #   volumes:
+  #     - ${ROOT_DIR}/docker/lidarr-config:/config
+  #     - ${ROOT_DIR}/data:/data
+  #   ports:
+  #     - 8686:8686
+  #   restart: unless-stopped
 
-  readarr:
-    image: lscr.io/linuxserver/readarr:develop
-    container_name: readarr
-    networks:
-      - vpn_connection
-    environment:
-      - PUID=13004
-      - PGID=13000
-      - UMASK=002
-      - TZ=${TIMEZONE}
-    volumes:
-      - ${ROOT_DIR}/docker/readarr-config:/config
-      - ${ROOT_DIR}/data:/data
-    ports:
-      - 8787:8787
-    restart: unless-stopped
+  # readarr:
+  #   image: lscr.io/linuxserver/readarr:develop
+  #   container_name: readarr
+  #   networks:
+  #     - vpn_connection
+  #   environment:
+  #     - PUID=13004
+  #     - PGID=13000
+  #     - UMASK=002
+  #     - TZ=${TIMEZONE}
+  #   volumes:
+  #     - ${ROOT_DIR}/docker/readarr-config:/config
+  #     - ${ROOT_DIR}/data:/data
+  #   ports:
+  #     - 8787:8787
+  #   restart: unless-stopped
 
   jackett:
     image: lscr.io/linuxserver/jackett:latest
@@ -133,7 +116,7 @@ services:
     restart: unless-stopped
 
   vpn:
-    image: thrnz/docker-wireguard-pia
+    image: thrnz/docker-wireguard-pia:latest
     container_name: vpn
     volumes:
         - ${ROOT_DIR}/docker/pia-config/pia:/pia
@@ -146,7 +129,6 @@ services:
         - USER=${VPN_USER}
         - PASS=${VPN_PWD}
         - LOCAL_NETWORK=192.168.178.0/24
-  #       - PORT_FORWARDING=1
     ports:
       - 9117:9117
       - 8080:8080
@@ -162,7 +144,24 @@ services:
         interval: 30s
         timeout: 10s
         retries: 3
-
+  # komga:
+  #   image: gotson/komga
+  #   container_name: komga
+  #   environment:
+  #     - PUID=13015
+  #     - PGID=13000
+  #   volumes:
+  #     - ${ROOT_DIR}/docker/komga-config:/config
+  #     - ${ROOT_DIR}/data/media/books:/data
+  #     - type: bind
+  #       source: /etc/timezone
+  #       target: /etc/timezone
+  #       read_only: true
+  #   ports:
+  #     - 8081:8081
+  #   user: "1000:1000"
+  #   # remove the whole environment section if you don't need it
+  #   restart: unless-stopped  
 
 
 ##################### Photoprism #########################
@@ -213,7 +212,8 @@ services:
       PHOTOPRISM_SITE_AUTHOR: ""                     # meta site author
     working_dir: "/photoprism" # do not change or remove
     volumes:
-      - "${ROOT_DIR}/data/pictures:/photoprism/originals"               # Original media files (DO NOT REMOVE)
+      - "${ROOT_DIR}/data/media/photos/originals:/photoprism/originals"   # Original media files (DO NOT REMOVE)
+      - "${ROOT_DIR}/data/media/photos/import:/photoprism/import"               
       - "${ROOT_DIR}/data/photoprism_storage:/photoprism/storage"       # *Writable* storage folder for cache, database, and sidecar files (DO NOT REMOVE)
 
   ## Database Server (recommended)
@@ -241,6 +241,10 @@ services:
       MARIADB_PASSWORD: "insecure"
       MARIADB_ROOT_PASSWORD: "insecure"
   
-
+  #Cleans sonar torrents that are stale
+  sonar-torrent-cleaner:
+    restart: unless-stopped
+    image: sonarr-torrent-cleaner
+    container_name: sonar-torrent-cleaner
 networks:
   vpn_connection:
