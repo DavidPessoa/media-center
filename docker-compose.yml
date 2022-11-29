@@ -1,6 +1,23 @@
 ---
 version: "3.1"
 services:
+  jellyfin:
+    image: ghcr.io/confusedpolarbear/jellyfin-intro-skipper:10.8.5
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=13000
+      - TZ=Europe/Amsterdam
+    volumes:
+      - ${ROOT_DIR}/docker/jellyfin-config:/config
+      - ${ROOT_DIR}/data/media/tv:/data/tvshows
+      - ${ROOT_DIR}/data/media/movies:/data/movies
+    ports:
+      - 8096:8096
+      - 8920:8920 #optional
+      - 7359:7359/udp #optional
+      - 1900:1900/udp #optional
+    restart: unless-stopped
   plex:
     image: lscr.io/linuxserver/plex:1.29.1
     container_name: plex
@@ -9,12 +26,27 @@ services:
       - PUID=${UID}
       - PGID=13000
       - VERSION=docker
-      - PLEX_CLAIM=${PLEX_CLAIM}
     volumes:
       - ${ROOT_DIR}/docker/plex-config:/config
       - ${ROOT_DIR}/data/media/movies:/movies
       - ${ROOT_DIR}/data/media/tv:/tv
     restart: unless-stopped
+  emby:
+    image: emby/embyserver:latest
+    container_name: embyserver
+    environment:
+      - UID=1000 # The UID to run emby as (default: 2)
+      - GID=100 # The GID to run emby as (default 2)
+    volumes:
+      - ${ROOT_DIR}/docker/emby-config:/config # Configuration directory
+      - ${ROOT_DIR}/data/media/tv:/mnt/share1 # Media directory
+      - ${ROOT_DIR}/data/media/movies:/mnt/share2 # Media directory
+    ports:
+      - 8097:8096 # HTTP port
+    devices:
+      - /dev/dri:/dev/dri # VAAPI/NVDEC/NVENC render nodes
+    restart: unless-stopped
+
 #
 # SERVARR
 #
@@ -51,41 +83,6 @@ services:
     ports:
       - 8989:8989
     restart: unless-stopped
-
-  # lidarr:
-  #   image: lscr.io/linuxserver/lidarr:latest
-  #   container_name: lidarr
-  #   networks:
-  #     - vpn_connection
-  #   environment:
-  #     - PUID=13003
-  #     - PGID=13000
-  #     - UMASK=002
-  #     - TZ=${TIMEZONE}
-  #   volumes:
-  #     - ${ROOT_DIR}/docker/lidarr-config:/config
-  #     - ${ROOT_DIR}/data:/data
-  #   ports:
-  #     - 8686:8686
-  #   restart: unless-stopped
-
-  # readarr:
-  #   image: lscr.io/linuxserver/readarr:develop
-  #   container_name: readarr
-  #   networks:
-  #     - vpn_connection
-  #   environment:
-  #     - PUID=13004
-  #     - PGID=13000
-  #     - UMASK=002
-  #     - TZ=${TIMEZONE}
-  #   volumes:
-  #     - ${ROOT_DIR}/docker/readarr-config:/config
-  #     - ${ROOT_DIR}/data:/data
-  #   ports:
-  #     - 8787:8787
-  #   restart: unless-stopped
-
   jackett:
     image: lscr.io/linuxserver/jackett:latest
     container_name: jackett
@@ -144,103 +141,7 @@ services:
         interval: 30s
         timeout: 10s
         retries: 3
-  # komga:
-  #   image: gotson/komga
-  #   container_name: komga
-  #   environment:
-  #     - PUID=13015
-  #     - PGID=13000
-  #   volumes:
-  #     - ${ROOT_DIR}/docker/komga-config:/config
-  #     - ${ROOT_DIR}/data/media/books:/data
-  #     - type: bind
-  #       source: /etc/timezone
-  #       target: /etc/timezone
-  #       read_only: true
-  #   ports:
-  #     - 8081:8081
-  #   user: "1000:1000"
-  #   # remove the whole environment section if you don't need it
-  #   restart: unless-stopped  
 
-
-##################### Photoprism #########################
-  photoprism:
-    ## Use photoprism/photoprism:preview for testing preview builds:
-    image: photoprism/photoprism:latest
-    container_name: photoprism
-    depends_on:
-      - mariadb
-    ## Don't enable automatic restarts until PhotoPrism has been properly configured and tested!
-    ## If the service gets stuck in a restart loop, this points to a memory, filesystem, network, or database issue:
-    ## https://docs.photoprism.app/getting-started/troubleshooting/#fatal-server-errors
-    restart: unless-stopped
-    security_opt:
-      - seccomp:unconfined
-      - apparmor:unconfined
-    ports:
-      - "2342:2342" # HTTP port (host:container)
-    environment:
-      PUID: 13014
-      PGID: 13000
-      PHOTOPRISM_ADMIN_PASSWORD: "insecure"          # YOUR INITIAL ADMIN PASSWORD (MINIMUM 8 CHARACTERS, USERNAME "admin")
-      PHOTOPRISM_SITE_URL: "http://localhost:2342/"  # public server URL incl http:// or https:// and /path, :port is optional
-      PHOTOPRISM_ORIGINALS_LIMIT: 5000               # file size limit for originals in MB (increase for high-res video)
-      PHOTOPRISM_HTTP_COMPRESSION: "gzip"            # improves transfer speed and bandwidth utilization (none or gzip)
-      PHOTOPRISM_LOG_LEVEL: "info"                   # log level: trace, debug, info, warning, error, fatal, or panic
-      PHOTOPRISM_PUBLIC: "false"                     # no authentication required (disables password protection)
-      PHOTOPRISM_READONLY: "false"                   # do not modify originals directory (reduced functionality)
-      PHOTOPRISM_EXPERIMENTAL: "false"               # enables experimental features
-      PHOTOPRISM_DISABLE_CHOWN: "false"              # disables storage permission updates on startup
-      PHOTOPRISM_DISABLE_WEBDAV: "false"             # disables built-in WebDAV server
-      PHOTOPRISM_DISABLE_SETTINGS: "false"           # disables settings UI and API
-      PHOTOPRISM_DISABLE_TENSORFLOW: "false"         # disables all features depending on TensorFlow
-      PHOTOPRISM_DISABLE_FACES: "false"              # disables facial recognition
-      PHOTOPRISM_DISABLE_CLASSIFICATION: "false"     # disables image classification
-      PHOTOPRISM_DISABLE_RAW: "false"                # disables indexing and conversion of RAW files
-      PHOTOPRISM_RAW_PRESETS: "false"                # enables applying user presets when converting RAW files (reduces performance)
-      PHOTOPRISM_JPEG_QUALITY: 85                    # image quality, a higher value reduces compression (25-100)
-      PHOTOPRISM_DETECT_NSFW: "false"                # flag photos as private that MAY be offensive (requires TensorFlow)
-      PHOTOPRISM_UPLOAD_NSFW: "true"                 # allows uploads that MAY be offensive
-      PHOTOPRISM_DATABASE_DRIVER: "mysql"            # use MariaDB 10.5+ or MySQL 8+ instead of SQLite for improved performance
-      PHOTOPRISM_DATABASE_SERVER: "mariadb:3306"     # MariaDB or MySQL database server (hostname:port)
-      PHOTOPRISM_DATABASE_NAME: "photoprism"         # MariaDB or MySQL database schema name
-      PHOTOPRISM_DATABASE_USER: "photoprism"         # MariaDB or MySQL database user name
-      PHOTOPRISM_DATABASE_PASSWORD: "insecure"       # MariaDB or MySQL database user password
-      PHOTOPRISM_SITE_CAPTION: "AI-Powered Photos App"
-      PHOTOPRISM_SITE_DESCRIPTION: ""                # meta site description
-      PHOTOPRISM_SITE_AUTHOR: ""                     # meta site author
-    working_dir: "/photoprism" # do not change or remove
-    volumes:
-      - "${ROOT_DIR}/data/media/photos/originals:/photoprism/originals"   # Original media files (DO NOT REMOVE)
-      - "${ROOT_DIR}/data/media/photos/import:/photoprism/import"               
-      - "${ROOT_DIR}/data/photoprism_storage:/photoprism/storage"       # *Writable* storage folder for cache, database, and sidecar files (DO NOT REMOVE)
-
-  ## Database Server (recommended)
-  ## see https://docs.photoprism.app/getting-started/faq/#should-i-use-sqlite-mariadb-or-mysql
-  mariadb:
-    ## If MariaDB gets stuck in a restart loop, this points to a memory or filesystem issue:
-    ## https://docs.photoprism.app/getting-started/troubleshooting/#fatal-server-errors
-    restart: unless-stopped
-    image: mariadb:10.8
-    container_name: photoprism_mariadb
-    security_opt:
-      - seccomp:unconfined
-      - apparmor:unconfined
-    command: mysqld --innodb-buffer-pool-size=512M --transaction-isolation=READ-COMMITTED --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max-connections=512 --innodb-rollback-on-timeout=OFF --innodb-lock-wait-timeout=120
-    ## Never store database files on an unreliable device such as a USB flash drive, an SD card, or a shared network folder:
-    volumes:
-      - "${ROOT_DIR}/data/photoprism_database:/var/lib/mysql" # DO NOT REMOVE
-    environment:
-      PUID: 13014
-      PGID: 13000
-      MARIADB_AUTO_UPGRADE: "1"
-      MARIADB_INITDB_SKIP_TZINFO: "1"
-      MARIADB_DATABASE: "photoprism"
-      MARIADB_USER: "photoprism"
-      MARIADB_PASSWORD: "insecure"
-      MARIADB_ROOT_PASSWORD: "insecure"
-  
   #Cleans sonar torrents that are stale
   sonar-torrent-cleaner:
     restart: unless-stopped

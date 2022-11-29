@@ -30,15 +30,14 @@ sudo usermod -a -G mediacenter syncthing
 
 
 # Make directories
-sudo mkdir -pv docker/{sonarr,radarr,lidarr,readarr,mylar,prowlarr,qbittorrent,jackett,plex,photoprism,komga}-config
+sudo mkdir -pv docker/{sonarr,radarr,lidarr,readarr,mylar,prowlarr,qbittorrent,jackett,plex,photoprism,komga,jellyfin,emby}-config
 sudo mkdir -pv data/{torrents,media}/{tv,movies,music,books,comics,photos}
-sudo mkdir -pv data/photoprism_database
-sudo mkdir -pv data/photoprism_storage
-sudo mkdir -pv data/
 
 # Set permissions
 sudo chmod -R 775 data/
-sudo chown -R $(id -u):mediacenter data/
+sudo chmod -R 775 docker/
+sudo chown -R homeserver:mediacenter data/
+sudo chown -R homeserver:mediacenter docker/
 sudo chown -R sonarr:mediacenter docker/sonarr-config
 sudo chown -R radarr:mediacenter docker/radarr-config
 sudo chown -R lidarr:mediacenter docker/lidarr-config
@@ -49,6 +48,6 @@ sudo chown -R qbittorrent:mediacenter docker/qbittorrent-config
 sudo chown -R jackett:mediacenter docker/jackett-config
 sudo chown -R plex:mediacenter docker/plex-config
 sudo chown -R photoprism:mediacenter docker/photoprism-config
-sudo chown -R homeserver:mediacenter data/photoprism_database
-sudo chown -R homeserver:mediacenter data/photoprism_storage
 sudo chown -R komga:mediacenter docker/komga-config
+sudo chown -R homeserver:mediacenter docker/jellyfin-config
+sudo chown -R homeserver:mediacenter docker/emby-config
