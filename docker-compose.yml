@@ -18,22 +18,9 @@ services:
       - 7359:7359/udp #optional
       - 1900:1900/udp #optional
     restart: unless-stopped
-  plex:
-    image: lscr.io/linuxserver/plex:1.29.1
-    container_name: plex
-    network_mode: host
-    environment:
-      - PUID=${UID}
-      - PGID=13000
-      - VERSION=docker
-    volumes:
-      - ${ROOT_DIR}/docker/plex-config:/config
-      - ${ROOT_DIR}/data/media/movies:/movies
-      - ${ROOT_DIR}/data/media/tv:/tv
-    restart: unless-stopped
   emby:
     image: emby/embyserver:latest
-    container_name: embyserver
+    container_name: emby
     environment:
       - UID=1000 # The UID to run emby as (default: 2)
       - GID=100 # The GID to run emby as (default 2)
@@ -46,7 +33,6 @@ services:
     devices:
       - /dev/dri:/dev/dri # VAAPI/NVDEC/NVENC render nodes
     restart: unless-stopped
-
 #
 # SERVARR
 #
@@ -95,6 +81,20 @@ services:
     volumes:
       - ${ROOT_DIR}/docker/jackett-config:/config
       - ${ROOT_DIR}/data:/data
+    restart: unless-stopped
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      - PUID=13017
+      - PGID=13000
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${ROOT_DIR}/docker/bazarr-config:/config
+      - ${ROOT_DIR}/data/media/movies:/movies #optional
+      - ${ROOT_DIR}/data/media/tv:/tv #optional
+    ports:
+      - 6767:6767
     restart: unless-stopped
 
   qbittorrent:

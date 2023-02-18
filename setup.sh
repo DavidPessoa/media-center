@@ -13,6 +13,7 @@ sudo useradd plex -u 13009
 sudo useradd photoprism -u 13014
 sudo useradd komga -u 13015
 sudo useradd syncthing -u 13016
+sudo useradd bazarr -u 13017
 
 sudo groupadd mediacenter -g 13000
 sudo usermod -a -G mediacenter sonarr
@@ -27,10 +28,11 @@ sudo usermod -a -G mediacenter plex
 sudo usermod -a -G mediacenter photoprism
 sudo usermod -a -G mediacenter komga
 sudo usermod -a -G mediacenter syncthing
+sudo usermod -a -G mediacenter bazarr
 
 
 # Make directories
-sudo mkdir -pv docker/{sonarr,radarr,lidarr,readarr,mylar,prowlarr,qbittorrent,jackett,plex,photoprism,komga,jellyfin,emby}-config
+sudo mkdir -pv docker/{sonarr,radarr,lidarr,readarr,mylar,prowlarr,qbittorrent,jackett,plex,photoprism,komga,jellyfin,emby,bazarr}-config
 sudo mkdir -pv data/{torrents,media}/{tv,movies,music,books,comics,photos}
 
 # Set permissions
@@ -51,3 +53,4 @@ sudo chown -R photoprism:mediacenter docker/photoprism-config
 sudo chown -R komga:mediacenter docker/komga-config
 sudo chown -R homeserver:mediacenter docker/jellyfin-config
 sudo chown -R homeserver:mediacenter docker/emby-config
+sudo chown -R homeserver:mediacenter docker/bazarr-config
