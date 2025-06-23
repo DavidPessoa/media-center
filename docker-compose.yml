@@ -37,13 +37,15 @@ services:
     ports:
       - 8097:8096 # HTTP port
     devices:
-      - /dev/dri:/dev/dri # VAAPI/NVDEC/NVENC render nodes
+      # VAAPI Devices (examples)
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card0:/dev/dri/card0
     restart: unless-stopped
 #
 # SERVARR
 #
   radarr:
-    image: lscr.io/linuxserver/radarr:4.2.4
+    image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
     networks:
       - vpn_connection
@@ -60,7 +62,7 @@ services:
     restart: unless-stopped
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:3.0.9
+    image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
     networks:
       - vpn_connection
@@ -88,6 +90,8 @@ services:
       - ${ROOT_DIR}/docker/jackett-config:/config
       - ${ROOT_DIR}/data:/data
     restart: unless-stopped
+    depends_on:
+      - vpn
   bazarr:
     image: lscr.io/linuxserver/bazarr:latest
     container_name: bazarr
@@ -113,11 +117,13 @@ services:
       - UMASK=002
       - TZ=${TIMEZONE}
       - WEBUI_PORT=8080
+      - TORRENTING_PORT=6881
     volumes:
       - ${ROOT_DIR}/docker/qbittorrent-config:/config
       - ${ROOT_DIR}/data/torrents:/data/torrents
     restart: unless-stopped
-
+    depends_on:
+      - vpn
   vpn:
     image: thrnz/docker-wireguard-pia:latest
     container_name: vpn
@@ -147,7 +153,7 @@ services:
         interval: 30s
         timeout: 10s
         retries: 3
-
+      
   #Cleans sonar torrents that are stale
   sonar-torrent-cleaner:
     restart: unless-stopped
