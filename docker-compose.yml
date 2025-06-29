@@ -106,6 +106,18 @@ services:
     ports:
       - 6767:6767
     restart: unless-stopped
+    
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr
+    container_name: recyclarr
+    user: 13019:13000
+    security_opt: ['no-new-privileges:true']
+    environment:
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${ROOT_DIR}/docker/recyclarr-config:/config
+      - ${ROOT_DIR}/data:/data
+    restart: unless-stopped
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
